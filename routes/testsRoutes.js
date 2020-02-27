@@ -124,24 +124,41 @@ router.post('/createTest', (req, res) => {
 
     let testId = null;
 
-    newTest
-        .save()
-        .then(createdTest => {
-            testId = createdTest._id;
+    User
+        .findOne({ _id: req.body.creator })
+        .then(creator => {
+            const currentTime = new Date().getTime();
+            console.log(currentTime, creator.lastCreatedPost);
+            
+            if (creator.lastCreatedPost && currentTime - creator.lastCreatedPost < 300000) {
+                res.status(403).json({ success: false, isTimeErr: true })
+                return;
+            } else {
+                newTest
+                    .save()
+                    .then(createdTest => {
+                        testId = createdTest._id;
 
-            User
-                .findOne({ _id: req.body.creator })
-                .then(user => {
-                    user.createdTests.push({
-                        testId: testId
+                        User
+                            .findOne({ _id: req.body.creator })
+                            .then(user => {
+                                const currentTime = new Date().getTime();
+                                
+                                user.lastCreatedPost = currentTime;
+                                user.createdTests.push({
+                                    testId: testId
+                                })
+
+                                user.save();
+                                res.status(200).json({ success: true, createdTest });
+                            })
+
+                        // res.status(200).json(createdTest);
                     })
-
-                    user.save();
-                    res.status(200).json(createdTest);
-                })
-
-            // res.status(200).json(createdTest);
+            }
         })
+
+    
     
 })
 

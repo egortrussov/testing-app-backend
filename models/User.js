@@ -16,7 +16,12 @@ const UserSchema = new Schema({
     }],
     name: String,
     email: String,
-    password: String
+    password: String,
+    lastCreatedPost: {
+        type: Number,
+        required: false,
+        default: 0
+    }
 })
 
 module.exports = User = mongoose.model('User', UserSchema);
